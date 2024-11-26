@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Info Formatter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+        }
+        .output {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        .add-row {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Job Information Formatter</h1>
+
+    <label for="companyName">Company Name:</label><br>
+    <input list="companyList" id="companyName" placeholder="Select or enter Company Name">
+    <datalist id="companyList"></datalist><br><br>
+
+    <label for="jobRole">Job Role:</label><br>
+    <input list="roleList" id="jobRole" placeholder="Select or enter Job Role">
+    <datalist id="roleList"></datalist><br><br>
+
+    <label for="experience">Experience Required:</label><br>
+    <input list="experienceList" id="experience" placeholder="Select or enter Experience">
+    <datalist id="experienceList"></datalist><br><br>
+
+    <label for="link">Link:</label><br>
+    <input list="linkList" id="link" placeholder="Select or enter Link">
+    <br><br>
+
+    <label>Relevant LinkedIn Profiles:</label>
+    <div>
+        <input type="text" id="linkedinName" placeholder="Enter Name">
+        <input type="text" id="linkedinLink" placeholder="Enter LinkedIn Profile Link">
+        <button class="add-row" onclick="addLinkedInRow()">Add</button>
+    </div>
+    <table id="linkedinTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Profile Link</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table><br>
+
+    <label>Tags:</label>
+    <div>
+        <input list="tagsList" id="tagInput" placeholder="Select or enter Tag">
+        <datalist id="tagsList"></datalist>
+        <button class="add-row" onclick="addTagRow()">Add</button>
+    </div>
+    <table id="tagsTable">
+        <thead>
+            <tr>
+                <th>Tag</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table><br>
+
+    <button onclick="generateOutput()">Generate</button>
+
+    <div class="output" id="output"></div>
+    <button id="copyButton" style="display:none;" onclick="copyToClipboard()">Copy to Clipboard</button>
+
+    <script>
+        // Editable options for the form fields
+        const companies = ["VRV Securities", "Tech Innovators", "Global Solutions"];
+        const roles = ["Python Developer", "Frontend Engineer", "Data Analyst"];
+        const experiences = ["0 yrs (2025, 2026 grads)", "0 yrs (2024 grads)", "1 yrs (2023 grads)" ,"2 yrs (2022 grads)", "3 yrs (2021 grads)", "0-1 yrs (2024,2023 grads)","0-2 yrs (2024,2023,2022 grads)","0-3 yrs (2024,2023,2022,2021 grads)","1-2 yrs (2023,2022 grads)","1-3 yrs (2023,2022,2021 grads)","2-3 yrs (2022,2021 grads)"];
+        const tags = ["Internship", "Python", "Freshers", "Job", "Data", "Analytics"];
+
+        // Populate datalists
+        function populateDatalists() {
+            populateList("companyList", companies);
+            populateList("roleList", roles);
+            populateList("experienceList", experiences);
+            populateList("linkList", links);
+            populateList("tagsList", tags);
+        }
+
+        function populateList(datalistId, items) {
+            const datalist = document.getElementById(datalistId);
+            datalist.innerHTML = ""; // Clear any existing options
+            items.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item;
+                datalist.appendChild(option);
+            });
+        }
+
+        // Add LinkedIn profile row to the table
+        function addLinkedInRow() {
+            const name = document.getElementById("linkedinName").value.trim();
+            const link = document.getElementById("linkedinLink").value.trim();
+
+            if (!name || !link) {
+                alert("Please enter both name and link!");
+                return;
+            }
+
+            const table = document.getElementById("linkedinTable").querySelector("tbody");
+            const row = table.insertRow();
+            const nameCell = row.insertCell(0);
+            const linkCell = row.insertCell(1);
+
+            nameCell.textContent = name;
+            linkCell.innerHTML = `<a href="${link}" target="_blank">${link}</a>`;
+
+            document.getElementById("linkedinName").value = "";
+            document.getElementById("linkedinLink").value = "";
+        }
+
+        // Add Tag row to the table
+        function addTagRow() {
+            const tag = document.getElementById("tagInput").value.trim();
+
+            if (!tag) {
+                alert("Please enter a tag!");
+                return;
+            }
+
+            const table = document.getElementById("tagsTable").querySelector("tbody");
+            const row = table.insertRow();
+            const tagCell = row.insertCell(0);
+
+            tagCell.textContent = tag;
+
+            document.getElementById("tagInput").value = "";
+        }
+
+        // Generate the formatted output
+        function generateOutput() {
+            const companyName = document.getElementById("companyName").value.trim();
+            const jobRole = document.getElementById("jobRole").value.trim();
+            const experience = document.getElementById("experience").value.trim();
+            const link = document.getElementById("link").value.trim();
+
+            // LinkedIn profiles
+            const linkedinTable = document.getElementById("linkedinTable").querySelector("tbody");
+            let linkedinProfiles = "Relevant LinkedIn Profiles:\n";
+            for (const row of linkedinTable.rows) {
+                const name = row.cells[0].textContent;
+                const profileLink = row.cells[1].querySelector("a").href;
+                linkedinProfiles += `- ${name}: ${profileLink}\n`;
+            }
+
+            // Tags
+            const tagsTable = document.getElementById("tagsTable").querySelector("tbody");
+            let tagsList = "Tags: ";
+            const tagsArray = [];
+            for (const row of tagsTable.rows) {
+                tagsArray.push(row.cells[0].textContent);
+            }
+            tagsList += tagsArray.join(", ");
+
+            const output = `
+Company Name: ${companyName}
+
+Job Role: ${jobRole}
+
+Experience Required: ${experience}
+
+Link: ${link}
+
+${linkedinProfiles}
+
+${tagsList}
+            `;
+
+            document.getElementById("output").textContent = output.trim();
+            document.getElementById("copyButton").style.display = "inline-block";
+        }
+
+        // Copy the output to clipboard
+        function copyToClipboard() {
+            const output = document.getElementById("output").textContent;
+            navigator.clipboard.writeText(output).then(() => {
+                alert("Copied to clipboard!");
+            }).catch(err => {
+                alert("Failed to copy: " + err);
+            });
+        }
+
+        // Populate the datalists when the page loads
+        window.onload = populateDatalists;
+    </script>
+</body>
+</html>
